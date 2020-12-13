@@ -9,8 +9,8 @@ use pnet::packet::ipv4::Ipv4Packet;
 fn main() {
     let args = App::new("wiretap")
         .version("0.1.0")
-        .author("Jonathan Cooper")
-        .about("Teaches argument parsing")
+        .author("Jonathan Cooper <joncooperworks.com>")
+        .about("Pulls flow logs from an interface")
         .arg(Arg::with_name("interface")
                 .short("i")
                 .long("interface")
