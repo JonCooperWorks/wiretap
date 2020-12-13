@@ -4,7 +4,18 @@ use clap::{Arg, App};
 use pnet::datalink::{self, NetworkInterface};
 use pnet::datalink::Channel::Ethernet;
 use pnet::packet::ipv4::Ipv4Packet;
+use pnet::packet::tcp::TcpPacket;
+use pnet::packet::udp::UdpPacket;
 
+use std::time::SystemTime;
+
+
+fn timestamp() -> u64 {
+    match SystemTime::now().duration_since(SystemTime::UNIX_EPOCH) {
+        Ok(n) => n.as_secs(),
+        Err(_) => panic!("SystemTime before UNIX EPOCH!"),
+    }
+}
 
 fn main() {
     let args = App::new("wiretap")
@@ -43,7 +54,7 @@ fn main() {
     };
 
 
-    // Create a new channel, dealing with layer 3 packets
+    // Create a new channel, dealing with layer 2 packets
     let (_tx, mut rx) = match datalink::channel(&interface, Default::default()) {
         Ok(Ethernet(_tx, rx)) => (_tx, rx),
         Ok(_) => panic!("Unhandled channel type"),
@@ -54,7 +65,11 @@ fn main() {
         match rx.next() {
             Ok(packet) => {
                 let packet = Ipv4Packet::new(packet).unwrap();
-                println!("{} -> {}", packet.get_source(), packet.get_destination());
+
+                let timestamp = timestamp();
+
+
+                println!("{} - {} -> {}", timestamp, packet.get_source(), packet.get_destination());
 
                 // TODO: Send to CosmosDB
             },
