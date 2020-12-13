@@ -1,30 +1,47 @@
 extern crate pnet;
 
+use clap::{Arg, App};
 use pnet::datalink::{self, NetworkInterface};
 use pnet::datalink::Channel::Ethernet;
 use pnet::packet::ipv4::Ipv4Packet;
 
-use std::env;
-use std::process;
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
-    if args.len() != 2 {
-        println!("usage: wiretap <interface name>");
-        process::exit(0);
-    }
+    let args = App::new("wiretap")
+        .version("0.1.0")
+        .author("Jonathan Cooper")
+        .about("Teaches argument parsing")
+        .arg(Arg::with_name("interface")
+                .short("i")
+                .long("interface")
+                .takes_value(true)
+                .help("Network interface to be tapped"))
+        .arg(Arg::with_name("cosmosdb-connection")
+                .short("c")
+                .long("cosmosdb-connection")
+                .takes_value(true)
+                .help("CosmosDB connection string"))
+        .get_matches();
 
-    let interface_name = &args[1];
+    let interface_name = args.value_of("interface").unwrap_or("wg0");
 
     let interface_names_match =
-        |iface: &NetworkInterface| iface.name == *interface_name;
+        |iface: &NetworkInterface| iface.name == interface_name;
 
     // Find the network interface with the provided name
     let interfaces = datalink::interfaces();
-    let interface = interfaces.into_iter()
+    let interfaces = interfaces.into_iter()
                               .filter(interface_names_match)
-                              .next()
-                              .unwrap();
+                              .next();
+
+    let interface = match interfaces {
+        Some(interface) => interface,
+        None => {
+            println!("interface not found");
+            std::process::exit(0);
+        }
+    };
+
 
     // Create a new channel, dealing with layer 3 packets
     let (_tx, mut rx) = match datalink::channel(&interface, Default::default()) {
@@ -38,6 +55,8 @@ fn main() {
             Ok(packet) => {
                 let packet = Ipv4Packet::new(packet).unwrap();
                 println!("{} -> {}", packet.get_source(), packet.get_destination());
+
+                // TODO: Send to CosmosDB
             },
             Err(e) => {
                 println!("An error occurred while reading: {}", e);
