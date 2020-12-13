@@ -37,7 +37,7 @@ fn main() {
     let interface = match interfaces {
         Some(interface) => interface,
         None => {
-            println!("interface not found");
+            println!("interface {} not found", interface_name);
             std::process::exit(0);
         }
     };
