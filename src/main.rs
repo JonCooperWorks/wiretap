@@ -1,14 +1,17 @@
 extern crate pnet;
+use crate::pnet::packet::Packet;
+
+use std::net::Ipv4Addr;
+use std::time::SystemTime;
 
 use clap::{Arg, App};
+
 use pnet::datalink::{self, NetworkInterface};
 use pnet::datalink::Channel::Ethernet;
 use pnet::packet::ipv4::Ipv4Packet;
 use pnet::packet::tcp::TcpPacket;
 use pnet::packet::udp::UdpPacket;
-
-use std::time::SystemTime;
-
+use pnet::packet::ip::IpNextHeaderProtocols;
 
 fn timestamp() -> u64 {
     match SystemTime::now().duration_since(SystemTime::UNIX_EPOCH) {
@@ -17,11 +20,57 @@ fn timestamp() -> u64 {
     }
 }
 
+struct FlowLog {
+    src_ip: Ipv4Addr,
+    dst_ip: Ipv4Addr,
+    src_port: u16,
+    dst_port: u16,
+    timestamp: u64,
+    protocol: String
+}
+
+impl FlowLog {
+    fn new(packet: Ipv4Packet) -> Option<FlowLog> {
+        match packet.get_next_level_protocol() {
+            IpNextHeaderProtocols::Tcp => {
+                let tcp_packet = TcpPacket::new(packet.payload()).unwrap();
+                let flow_log = FlowLog{
+                    src_ip: packet.get_source(),
+                    dst_ip: packet.get_destination(),
+                    dst_port: tcp_packet.get_destination(),
+                    src_port: tcp_packet.get_source(),
+                    timestamp: timestamp(),
+                    protocol: String::from("TCP")
+                };
+                return Some(flow_log);
+            }
+
+            IpNextHeaderProtocols::Udp => {
+                let udp_packet = UdpPacket::new(packet.payload()).unwrap();
+                let flow_log = FlowLog{
+                    src_ip: packet.get_source(),
+                    dst_ip: packet.get_destination(),
+                    dst_port: udp_packet.get_destination(),
+                    src_port: udp_packet.get_source(),
+                    timestamp: timestamp(),
+                    protocol: String::from("UDP")
+                };
+                return Some(flow_log);
+            }
+            _ => {
+                println!("unsupported protocol");
+                return None;
+            }
+        }
+        
+    }
+}
+
 fn main() {
     let args = App::new("wiretap")
         .version("0.1.0")
         .author("Jonathan Cooper <joncooperworks.com>")
-        .about("Pulls flow logs from an interface")
+        .about("Pulls flow logs from an interface and sends them to CosmosDB")
         .arg(Arg::with_name("interface")
                 .short("i")
                 .long("interface")
@@ -66,12 +115,19 @@ fn main() {
             Ok(packet) => {
                 let packet = Ipv4Packet::new(packet).unwrap();
 
-                let timestamp = timestamp();
+                let flow_log = FlowLog::new(packet).unwrap();
+                println!(
+                    "{} - {} {}:{} -> {}:{}", 
+                    flow_log.timestamp, 
+                    flow_log.protocol, 
+                    flow_log.src_ip, 
+                    flow_log.src_port, 
+                    flow_log.dst_ip, 
+                    flow_log.dst_port
+                );
 
-
-                println!("{} - {} -> {}", timestamp, packet.get_source(), packet.get_destination());
-
-                // TODO: Send to CosmosDB
+                // TODO: batch flow logs into sqlite database for exfil to CosmosDB
+                
             },
             Err(e) => {
                 println!("An error occurred while reading: {}", e);
