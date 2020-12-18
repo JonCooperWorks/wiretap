@@ -115,16 +115,21 @@ fn main() {
             Ok(packet) => {
                 let packet = Ipv4Packet::new(packet).unwrap();
 
-                let flow_log = FlowLog::new(packet).unwrap();
-                println!(
-                    "{} - {} {}:{} -> {}:{}", 
-                    flow_log.timestamp, 
-                    flow_log.protocol, 
-                    flow_log.src_ip, 
-                    flow_log.src_port, 
-                    flow_log.dst_ip, 
-                    flow_log.dst_port
-                );
+               match FlowLog::new(packet) {
+                   Some(flow_log) => {
+                        println!(
+                            "{} - {} {}:{} -> {}:{}", 
+                            flow_log.timestamp, 
+                            flow_log.protocol, 
+                            flow_log.src_ip, 
+                            flow_log.src_port, 
+                            flow_log.dst_ip, 
+                            flow_log.dst_port
+                        );
+                   }
+                   None => println!("protocol not supported")
+               }
+                
 
                 // TODO: batch flow logs into sqlite database for exfil to CosmosDB
                 
