@@ -40,7 +40,7 @@ impl FlowLog {
                     dst_port: tcp_packet.get_destination(),
                     src_port: tcp_packet.get_source(),
                     timestamp: timestamp(),
-                    protocol: String::from("TCP")
+                    protocol: String::from("T")
                 };
                 return Some(flow_log);
             }
@@ -53,7 +53,7 @@ impl FlowLog {
                     dst_port: udp_packet.get_destination(),
                     src_port: udp_packet.get_source(),
                     timestamp: timestamp(),
-                    protocol: String::from("UDP")
+                    protocol: String::from("U")
                 };
                 return Some(flow_log);
             }
@@ -62,7 +62,6 @@ impl FlowLog {
                 return None;
             }
         }
-        
     }
 }
 
@@ -113,20 +112,25 @@ fn main() {
     loop {
         match rx.next() {
             Ok(packet) => {
-                let packet = Ipv4Packet::new(packet).unwrap();
-                match FlowLog::new(packet) {
-                    Some(flow_log) => {
-                            println!(
-                                "{} - {} {}:{} -> {}:{}", 
-                                flow_log.timestamp, 
-                                flow_log.protocol, 
-                                flow_log.src_ip, 
-                                flow_log.src_port, 
-                                flow_log.dst_ip, 
-                                flow_log.dst_port
-                            );
+                match Ipv4Packet::new(packet) {
+                    Some(ip4_packet) => {
+                        match FlowLog::new(ip4_packet) {
+                            Some(flow_log) => {
+                                    println!(
+                                        "{} - {} {}:{} -> {}:{}", 
+                                        flow_log.timestamp, 
+                                        flow_log.protocol, 
+                                        flow_log.src_ip, 
+                                        flow_log.src_port, 
+                                        flow_log.dst_ip, 
+                                        flow_log.dst_port
+                                    );
+                            }
+                            None => println!("protocol not supported")
+                        }
                     }
-                    None => println!("protocol not supported")
+
+                    None => println!("only IPv4 supported at this time!")
                 }
                 
 
