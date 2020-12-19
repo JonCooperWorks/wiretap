@@ -12,12 +12,60 @@ use pnet::packet::ipv4::Ipv4Packet;
 use pnet::packet::tcp::TcpPacket;
 use pnet::packet::udp::UdpPacket;
 use pnet::packet::ip::IpNextHeaderProtocols;
+use rusqlite::{Connection, Result, NO_PARAMS};
+
 
 fn timestamp() -> u64 {
     match SystemTime::now().duration_since(SystemTime::UNIX_EPOCH) {
         Ok(n) => n.as_secs(),
         Err(_) => panic!("SystemTime before UNIX EPOCH!"),
     }
+}
+
+fn setup_database(conn: &mut Connection) -> Result<()> {
+    conn.execute(
+        "create table if not exists flow_log (
+             id integer primary key,
+             src_ip varchar(45) not null,
+             src_port integer not null,
+             dst_ip varchar(45) not null,
+             dst_port integer not null,
+             timestamp integer not null,
+             protocol char not null,
+             constraint portlimit CHECK (src_port<65536 AND dst_port<65536) 
+         )",
+        NO_PARAMS,
+    )?;
+    Ok(())
+}
+
+fn temporary_store_log(conn: &mut Connection, flow_log: FlowLog) -> Result<()> {
+    conn.execute(
+        "insert into flow_log (
+            src_ip, 
+            src_port, 
+            dst_ip, 
+            dst_port, 
+            timestamp, 
+            protocol
+        ) values(
+            ?1,
+            ?2,
+            ?3,
+            ?4,
+            ?5,
+            ?6
+        )",
+        &[
+            &flow_log.src_ip.to_string(), 
+            &flow_log.src_port.to_string(), 
+            &flow_log.dst_ip.to_string(), 
+            &flow_log.dst_port.to_string(), 
+            &flow_log.timestamp.to_string(), 
+            &flow_log.protocol,
+        ]
+    )?;
+    Ok(())
 }
 
 struct FlowLog {
@@ -74,15 +122,21 @@ fn main() {
                 .short("i")
                 .long("interface")
                 .takes_value(true)
-                .help("Network interface to be tapped"))
+                .help("Network interface to be tapped. Default: 'wg0'"))
         .arg(Arg::with_name("cosmosdb-connection")
                 .short("c")
                 .long("cosmosdb-connection")
                 .takes_value(true)
                 .help("CosmosDB connection string"))
+        .arg(Arg::with_name("sqlite-db")
+                .short("d")
+                .long("sqlite-db")
+                .takes_value(true)
+                .help("SQLite DB filename. Default: ':memory:'"))
         .get_matches();
 
     let interface_name = args.value_of("interface").unwrap_or("wg0");
+    let sqlite_db_name = args.value_of("sqlite-db").unwrap_or(":memory:");
 
     let interface_names_match =
         |iface: &NetworkInterface| iface.name == interface_name;
@@ -109,6 +163,12 @@ fn main() {
         Err(e) => panic!("An error occurred when creating the datalink channel: {}", e)
     };
 
+    let mut conn = Connection::open(sqlite_db_name).unwrap();
+    match setup_database(&mut conn) {
+        Ok(_) => {}
+        Err(e) => panic!("error setting up database: {}", e)
+    }
+
     loop {
         match rx.next() {
             Ok(packet) => {
@@ -125,7 +185,12 @@ fn main() {
                                     flow_log.dst_ip, 
                                     flow_log.dst_port
                                 );
-                                // TODO: batch flow logs into sqlite database for exfil to CosmosDB
+
+                                // Log flow logs in SQLite database temporarily
+                                match temporary_store_log(&mut conn, flow_log) {
+                                    Ok(_) => {},
+                                    Err(e) => println!("error storing log: {}", e)
+                                }
 
                             }
                             None => println!("protocol not supported")
