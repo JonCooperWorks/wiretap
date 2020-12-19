@@ -116,15 +116,17 @@ fn main() {
                     Some(ip4_packet) => {
                         match FlowLog::new(ip4_packet) {
                             Some(flow_log) => {
-                                    println!(
-                                        "{} - {} {}:{} -> {}:{}", 
-                                        flow_log.timestamp, 
-                                        flow_log.protocol, 
-                                        flow_log.src_ip, 
-                                        flow_log.src_port, 
-                                        flow_log.dst_ip, 
-                                        flow_log.dst_port
-                                    );
+                                println!(
+                                    "{} - {} {}:{} -> {}:{}", 
+                                    flow_log.timestamp, 
+                                    flow_log.protocol, 
+                                    flow_log.src_ip, 
+                                    flow_log.src_port, 
+                                    flow_log.dst_ip, 
+                                    flow_log.dst_port
+                                );
+                                // TODO: batch flow logs into sqlite database for exfil to CosmosDB
+
                             }
                             None => println!("protocol not supported")
                         }
@@ -134,7 +136,6 @@ fn main() {
                 }
                 
 
-                // TODO: batch flow logs into sqlite database for exfil to CosmosDB
                 
             },
             Err(e) => {
