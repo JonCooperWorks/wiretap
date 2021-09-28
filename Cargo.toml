@@ -1,0 +1,2 @@
+[workspace]
+members = ["bpfwall", "bpfwall-common", "xtask"]
