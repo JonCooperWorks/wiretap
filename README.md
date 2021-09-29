@@ -30,7 +30,7 @@ cargo +nightly install bpf-linker
 
 # Install cargo-generate to generate aya project skeleton.
 # There are multiple binaries in this crate so specify cargo-generate
-cargo install --git http://github.com/cargo-generate/cargo-generate cargo-generate
+cargo install --git https://github.com/cargo-generate/cargo-generate cargo-generate
 ```
 
 
