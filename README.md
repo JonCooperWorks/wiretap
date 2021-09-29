@@ -3,9 +3,8 @@
 It is meant to help me learn eBPF and Rust and should not be used in a production environment.
 
 ## Prerequisites
-
 This was done on Ubuntu 20.04 on a DigitalOcean droplet with 2GB RAM.
-Building `cargo-generate` consistently crashed with an OOM on smaller machines.
+Building `cargo-generate` consistently crashed `cargo` with an OOM on smaller machines.
 
 ### Setup
 First, install dependencies with the following commands:
