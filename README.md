@@ -1,10 +1,11 @@
 # bpfwall
-
-`bpfwall` is a simple eBPF firewall that uses [`aya`](https://crates.io/crates/aya). `aya` is a Rust crate to allow developers to write eBPF programs and userspace loaders in Rust.
+`bpfwall` is a simple eBPF firewall that uses [`aya`](https://crates.io/crates/aya) to create the eBPF program and loader in Rust.
+It is meant to help me learn eBPF and Rust and should not be used in a production environment.
 
 ## Prerequisites
 
 This was done on Ubuntu 20.04 on a DigitalOcean droplet with 2GB RAM.
+Building `cargo-generate` consistently crashed with an OOM on smaller machines.
 
 ### Setup
 First, install dependencies with the following commands:
@@ -40,7 +41,7 @@ cargo xtask build-ebpf
 ```
 
 To perform a release build you can use the `--release` flag.
-You may also change the target architecture with the `--target` flag
+You may also change the target architecture with the `--target` flag.
 
 ## Build Userspace
 

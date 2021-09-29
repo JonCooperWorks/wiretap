@@ -26,7 +26,7 @@ fn try_main() -> Result<(), anyhow::Error> {
     let mut bpf = Bpf::load_file(&opt.path)?;
     let program: &mut Xdp = bpf.program_mut("bpfwall")?.try_into()?;
     program.load()?;
-    program.attach(&opt.iface, XdpFlags::default())?;
+    program.attach(&opt.iface, XdpFlags::SKB_MODE)?;
     
     let running = Arc::new(AtomicBool::new(true));
     let r = running.clone();
