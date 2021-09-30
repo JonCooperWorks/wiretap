@@ -18,10 +18,10 @@ pub struct Options {
 
 
 pub fn generate(opts: Options) -> Result<(), anyhow::Error> {
-    let dir = PathBuf::from(opts.bpf_directory);
+    let dir = PathBuf::from(&opts.bpf_directory);
     let vmlinux_path = Path::new(&opts.vmlinux_path);
     let bindings = btf_types::generate(vmlinux_path, &opts.names, true)?;
-    println!("Generating vmlinux.h bindings for {:#?}", opts.names.join(", "));
+    println!("Generating bindings {} for {:#?} to {}/bindings.rs", opts.vmlinux_path, opts.names.join(", "), opts.bpf_directory);
     // Write the bindings to the $OUT_DIR/bindings.rs file.
     let mut out = File::create(dir.join("bindings.rs"))?;
     write!(out, "{}", bindings)?;
