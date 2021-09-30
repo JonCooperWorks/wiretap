@@ -1,4 +1,5 @@
 mod build_ebpf;
+mod codegen;
 
 use std::process::exit;
 
@@ -12,6 +13,7 @@ pub struct Options {
 #[derive(StructOpt)]
 enum Command {
     BuildEbpf(build_ebpf::Options),
+    Codegen(codegen::Options),
 }
 
 fn main() {
@@ -20,6 +22,7 @@ fn main() {
     use Command::*;
     let ret = match opts.command {
         BuildEbpf(opts) => build_ebpf::build(opts),
+        Codegen(opts) => codegen::generate(opts),
     };
 
     if let Err(e) = ret {

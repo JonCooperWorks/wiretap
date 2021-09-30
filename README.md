@@ -32,6 +32,18 @@ cargo +nightly install bpf-linker
 cargo install --git https://github.com/cargo-generate/cargo-generate cargo-generate
 ```
 
+## Generating `vmlinux` Bindings
+This package requires Rust `vmlinux.h` bindings.
+Use the `codegen` build task to do this.
+They will be written out to `bpfwall-ebpf/bindings.rs` by default but you can specify a directory with the `--bpf-directory` flag.
+
+```bash
+cargo xtask codegen --names iphdr ethhdr
+```
+
+You can change 
+
+
 
 ## Build eBPF
 
