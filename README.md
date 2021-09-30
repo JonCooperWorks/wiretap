@@ -32,7 +32,7 @@ cargo +nightly install bpf-linker
 cargo install --git https://github.com/cargo-generate/cargo-generate cargo-generate
 ```
 
-## Generating `vmlinux` Bindings
+### Generating `vmlinux` Bindings
 This package requires Rust `vmlinux.h` bindings.
 Use the `codegen` build task to do this.
 It will look in `/sys/kernel/btf/vmlinux` by default for the vmlinux file.
