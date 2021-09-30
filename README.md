@@ -35,10 +35,17 @@ cargo install --git https://github.com/cargo-generate/cargo-generate cargo-gener
 ## Generating `vmlinux` Bindings
 This package requires Rust `vmlinux.h` bindings.
 Use the `codegen` build task to do this.
-They will be written out to `bpfwall-ebpf/bindings.rs` by default but you can specify a directory with the `--bpf-directory` flag.
+It will look in `/sys/kernel/btf/vmlinux` by default for the vmlinux file.
+The generated bindings will be written out to `bpfwall-ebpf/bindings.rs` by default. 
 
 ```bash
 cargo xtask codegen --names iphdr ethhdr
+```
+
+You can specify a eBPF directory and vmlinux path with the `--bpf-directory` and `--vmlinux-path`  flags.
+
+```bash
+cargo xtask codegen --names iphdr ethhdr --bpf-directory bpfwall-ebpf --vmlinux-path /sys/kernel/btf/vmlinux
 ```
 
 You can change 
