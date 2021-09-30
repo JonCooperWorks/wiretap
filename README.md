@@ -48,10 +48,6 @@ You can specify a eBPF directory and vmlinux path with the `--bpf-directory` and
 cargo xtask codegen --names iphdr ethhdr --bpf-directory bpfwall-ebpf --vmlinux-path /sys/kernel/btf/vmlinux
 ```
 
-You can change 
-
-
-
 ## Build eBPF
 
 ```bash
