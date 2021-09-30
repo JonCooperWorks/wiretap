@@ -15,7 +15,7 @@ sudo apt update
 sudo apt upgrade
 
 # Then install the packages needed to compile bpf modules
-sudo apt install -y build-essential llvm-12-dev libclang-12-dev zlib1g-dev libssl-dev pkg-config
+sudo apt install -y build-essential llvm-12-dev libclang-12-dev zlib1g-dev libssl-dev pkg-config linux-cloud-tools-generic linux-tools-generic
 
 # Install Rust
 curl https://sh.rustup.rs -sSf | sh
