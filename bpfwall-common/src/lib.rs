@@ -10,10 +10,11 @@ pub struct IPv4PacketLog {
     pub action: u32,
 }
 
+#[cfg(feature = "user")]
+unsafe impl aya::Pod for IPv4PacketLog {}
+
+
 pub const ICMP_PROTOCOL: u8 = 0x01;
 pub const UDP_PROTOCOL: u8 = 0x11;
 pub const TCP_PROTOCOL: u8 = 0x06;
-
-#[cfg(feature = "user")]
-unsafe impl aya::Pod for IPv4PacketLog {}
 
