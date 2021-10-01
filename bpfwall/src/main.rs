@@ -1,17 +1,19 @@
-use aya::Bpf;
-use aya::programs::{Xdp, XdpFlags};
+use aya::{
+    maps::perf::AsyncPerfEventArray,
+    programs::{Xdp, XdpFlags},
+    util::online_cpus,
+    Bpf,
+};
+use bytes::BytesMut;
 use std::{
-    convert::{TryFrom,TryInto},
-    sync::Arc,
-    sync::atomic::{AtomicBool, Ordering},
+    convert::{TryFrom, TryInto},
+    fs, net,
 };
 use structopt::StructOpt;
+use tokio::{signal, task};
 
-fn main() {
-    if let Err(e) = try_main() {
-        eprintln!("error: {:#}", e);
-    }
-}
+use bpfwall_common::IPv4PacketLog;
+
 
 #[derive(Debug, StructOpt)]
 struct Opt {
@@ -21,23 +23,39 @@ struct Opt {
     iface: String,
 }
 
-fn try_main() -> Result<(), anyhow::Error> {
+#[tokio::main]
+async fn main() -> Result<(), anyhow::Error> {
     let opt = Opt::from_args();
-    let mut bpf = Bpf::load_file(&opt.path)?;
-    let program: &mut Xdp = bpf.program_mut("bpfwall")?.try_into()?;
-    program.load()?;
-    program.attach(&opt.iface, XdpFlags::SKB_MODE)?;
+    let data = fs::read(&opt.path)?;
     
-    let running = Arc::new(AtomicBool::new(true));
-    let r = running.clone();
+    let mut bpf = Bpf::load(&data)?;
+    let probe: &mut Xdp = bpf.program_mut("bpfwall")?.try_into()?;
+    probe.load()?;
+    probe.attach(&opt.iface, XdpFlags::SKB_MODE)?;
 
-    ctrlc::set_handler(move || {
-        r.store(false, Ordering::SeqCst);
-    }).expect("Error setting Ctrl-C handler");
+    let mut perf_array = AsyncPerfEventArray::try_from(bpf.map_mut("EVENTS")?)?;
 
-    println!("Waiting for Ctrl-C...");
-    while running.load(Ordering::SeqCst) {}
-    println!("Exiting...");
+    for cpu_id in online_cpus()? {
+        let mut buf = perf_array.open(cpu_id, None)?;
 
-    Ok(())
+        task::spawn(async move {
+            let mut buffers = (0..10)
+                .map(|_| BytesMut::with_capacity(1024))
+                .collect::<Vec<_>>();
+
+            loop {
+                let events = buf.read_events(&mut buffers).await.unwrap();
+                for i in 0..events.read {
+                    let buf = &mut buffers[i];
+                    let ptr = buf.as_ptr() as *const IPv4PacketLog;
+                    let data = unsafe { ptr.read_unaligned() };
+                    let src_addr = net::Ipv4Addr::from(data.address);
+                    println!("LOG: SRC {}, ACTION {}", src_addr, data.action);
+                }
+            }
+        });
+    }
+
+    signal::ctrl_c().await.expect("failed to listen for event");
+    Ok::<_, anyhow::Error>(())
 }

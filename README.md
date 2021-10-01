@@ -67,7 +67,7 @@ cargo build
 ## Run
 
 ```bash
-cargo run --package bpfwall --bin bpfwall
+cargo run --bin bpfwall --  --iface eth0 --path target/bpfel-unknown-none/debug/bpfwall
 ```
 
 

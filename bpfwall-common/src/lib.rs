@@ -12,6 +12,7 @@ pub struct IPv6PacketLog {
     pub action: u32,
 }
 
+#[repr(C)]
 pub enum PacketLog {
     V4(IPv4PacketLog),
     V6(IPv6PacketLog),
