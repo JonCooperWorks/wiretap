@@ -75,7 +75,7 @@ fn try_xdp_firewall(ctx: XdpContext) -> Result<u32, ()> {
         }
 
         _ => {
-            (0x00, 0x00)
+            (0x0000, 0x0000)
         }
     };
 
