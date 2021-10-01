@@ -10,21 +10,6 @@ pub struct IPv4PacketLog {
     pub action: u32,
 }
 
-#[repr(C)]
-pub struct IPv6PacketLog {
-    pub src: u64,
-    pub dst: u64,
-    pub src_port: u16,
-    pub dst_port: u16,
-    pub action: u32,
-}
-
-#[repr(C)]
-pub enum PacketLog {
-    V4(IPv4PacketLog),
-    V6(IPv6PacketLog),
-}
-
 pub const UDP_PROTOCOL: u8 = 0x11;
 pub const TCP_PROTOCOL: u8 = 0x06;
 
