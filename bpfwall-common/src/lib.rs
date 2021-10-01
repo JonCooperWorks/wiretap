@@ -15,5 +15,5 @@ pub const UDP_PROTOCOL: u8 = 0x11;
 pub const TCP_PROTOCOL: u8 = 0x06;
 
 #[cfg(feature = "user")]
-unsafe impl aya::Pod for PacketLog {}
+unsafe impl aya::Pod for IPv4PacketLog {}
 
