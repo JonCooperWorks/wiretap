@@ -10,11 +10,11 @@ use aya_bpf::{
 
 use core::mem;
 use memoffset::offset_of;
-use bpfwall_common::*;
+use bpfwall_common::{IPv4PacketLog, UDP_PROTOCOL, TCP_PROTOCOL};
 
 // ANCHOR: bindings
 mod bindings;
-use bindings::{ethhdr, iphdr};
+use bindings::{ethhdr, iphdr, tcphdr, udphdr};
 // ANCHOR_END: bindings
 
 #[panic_handler]
@@ -56,14 +56,38 @@ fn try_xdp_firewall(ctx: XdpContext) -> Result<u32, ()> {
     if h_proto != ETH_P_IP {
         return Ok(xdp_action::XDP_PASS);
     }
+    
     let source = u32::from_be(unsafe { *ptr_at(&ctx, ETH_HDR_LEN + offset_of!(iphdr, saddr))? });
     let dest = u32::from_be(unsafe { *ptr_at(&ctx, ETH_HDR_LEN + offset_of!(iphdr, daddr))? });
+    let l3_protocol = u8::from_be(unsafe { *ptr_at(&ctx, ETH_HDR_LEN + offset_of!(iphdr, protocol))? });
+
+    let (src_port, dst_port) = match l3_protocol {
+        UDP_PROTOCOL => {
+            let src_port = u16::from_be(unsafe { *ptr_at(&ctx, IP_HDR_LEN + offset_of!(udphdr, source))? });
+            let dst_port = u16::from_be(unsafe { *ptr_at(&ctx, IP_HDR_LEN + offset_of!(udphdr, dest))? });
+            (src_port, dst_port)
+        }
+
+        TCP_PROTOCOL => {
+            let src_port = u16::from_be(unsafe { *ptr_at(&ctx, IP_HDR_LEN + offset_of!(tcphdr, source))? });
+            let dst_port = u16::from_be(unsafe { *ptr_at(&ctx, IP_HDR_LEN + offset_of!(tcphdr, dest))? });
+            (src_port, dst_port)
+        }
+
+        _ => {
+            (0x00, 0x00)
+        }
+    };
 
     let log_entry = IPv4PacketLog {
         src: source,
         dst: dest,
+        src_port: src_port,
+        dst_port: dst_port,
+        l3_protocol: l3_protocol,
         action: xdp_action::XDP_PASS,
     };
+
     unsafe {
         EVENTS.output(&ctx, &log_entry, 0);
     }
@@ -73,3 +97,4 @@ fn try_xdp_firewall(ctx: XdpContext) -> Result<u32, ()> {
 
 const ETH_P_IP: u16 = 0x0800;
 const ETH_HDR_LEN: usize = mem::size_of::<ethhdr>();
+const IP_HDR_LEN: usize = mem::size_of::<iphdr>() + ETH_HDR_LEN;

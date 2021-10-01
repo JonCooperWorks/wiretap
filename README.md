@@ -37,16 +37,16 @@ This package requires Rust `vmlinux.h` bindings.
 Use the `codegen` build task to do this.
 It will look in `/sys/kernel/btf/vmlinux` by default for the vmlinux file.
 The generated bindings will be written out to `bpfwall-ebpf/bindings.rs` by default.
-`bpfwall` needs the bindings for `iphdr` and `ethhdr` to inspect Ethernet and IP packets before they go on the wire.
+`bpfwall` needs the bindings for `iphdr`, `ethhdr`, `tcphdr` and `udphdr` to inspect Ethernet and IP packets before they go on the wire.
 
 ```bash
-cargo xtask codegen --names iphdr ethhdr
+cargo xtask codegen --names iphdr ethhdr tcphdr udphdr
 ```
 
 You can specify a eBPF directory and vmlinux path with the `--bpf-directory` and `--vmlinux-path`  flags.
 
 ```bash
-cargo xtask codegen --names iphdr ethhdr --bpf-directory bpfwall-ebpf --vmlinux-path /sys/kernel/btf/vmlinux
+cargo xtask codegen --names iphdr ethhdr tcphdr udphdr --bpf-directory bpfwall-ebpf --vmlinux-path /sys/kernel/btf/vmlinux
 ```
 
 ## Build eBPF

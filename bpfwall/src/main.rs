@@ -12,7 +12,7 @@ use std::{
 use structopt::StructOpt;
 use tokio::{signal, task};
 
-use bpfwall_common::IPv4PacketLog;
+use bpfwall_common::{IPv4PacketLog, l3_protocol};
 
 
 #[derive(Debug, StructOpt)]
@@ -51,7 +51,8 @@ async fn main() -> Result<(), anyhow::Error> {
                     let data = unsafe { ptr.read_unaligned() };
                     let src_addr = net::Ipv4Addr::from(data.src);
                     let dst_addr = net::Ipv4Addr::from(data.dst);
-                    println!("LOG:  {} -> {}, ACTION {}", src_addr, dst_addr, data.action);
+                    let protocol = l3_protocol(data.l3_protocol);
+                    println!("LOG: {} {}:{} -> {}:{}, ACTION {}", protocol, src_addr, data.src_port, dst_addr, data.dst_port, data.action);
                 }
             }
         });
