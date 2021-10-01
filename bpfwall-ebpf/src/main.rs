@@ -23,8 +23,8 @@ fn panic(_info: &core::panic::PanicInfo) -> ! {
 }
 
 // ANCHOR: map
-#[map(name = "EVENTS")]
-static mut EVENTS: PerfMap<IPv4PacketLog> = PerfMap::<IPv4PacketLog>::with_max_entries(1024, 0);
+#[map(name = "IPv4_PACKETS")]
+static mut IPv4_PACKETS: PerfMap<IPv4PacketLog> = PerfMap::<IPv4PacketLog>::with_max_entries(1024, 0);
 // ANCHOR_END: map
 
 #[xdp(name="bpfwall")]
@@ -89,7 +89,7 @@ fn try_xdp_firewall(ctx: XdpContext) -> Result<u32, ()> {
     };
 
     unsafe {
-        EVENTS.output(&ctx, &log_entry, 0);
+        IPv4_PACKETS.output(&ctx, &log_entry, 0);
     }
     Ok(xdp_action::XDP_PASS)
 }

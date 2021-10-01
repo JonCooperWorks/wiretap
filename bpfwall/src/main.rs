@@ -42,7 +42,7 @@ async fn main() -> Result<(), anyhow::Error> {
     probe.load()?;
     probe.attach(&opt.iface, XdpFlags::SKB_MODE)?;
 
-    let mut perf_array = AsyncPerfEventArray::try_from(bpf.map_mut("EVENTS")?)?;
+    let mut perf_array = AsyncPerfEventArray::try_from(bpf.map_mut("IPv4_PACKETS")?)?;
 
     for cpu_id in online_cpus()? {
         let mut buf = perf_array.open(cpu_id, None)?;
@@ -62,6 +62,8 @@ async fn main() -> Result<(), anyhow::Error> {
                     let dst_addr = net::Ipv4Addr::from(data.dst);
                     let protocol = l3_protocol(data.l3_protocol);
                     println!("LOG: {} {}:{} -> {}:{}, ACTION {}", protocol, src_addr, data.src_port, dst_addr, data.dst_port, data.action);
+
+                    // TODO: send to storage infrastructure async.
                 }
             }
         });
