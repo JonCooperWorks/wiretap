@@ -10,16 +10,9 @@ pub struct IPv4PacketLog {
     pub action: u32,
 }
 
+pub const ICMP_PROTOCOL: u8 = 0x01;
 pub const UDP_PROTOCOL: u8 = 0x11;
 pub const TCP_PROTOCOL: u8 = 0x06;
-
-pub fn l3_protocol(protocol: u8) -> &'static str {
-    match protocol {
-        UDP_PROTOCOL => "UDP",
-        TCP_PROTOCOL => "TCP",
-        _ => "TODO",
-    }
-}
 
 #[cfg(feature = "user")]
 unsafe impl aya::Pod for PacketLog {}

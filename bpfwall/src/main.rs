@@ -12,7 +12,7 @@ use std::{
 use structopt::StructOpt;
 use tokio::{signal, task};
 
-use bpfwall_common::{IPv4PacketLog, l3_protocol};
+use bpfwall_common::IPv4PacketLog;
 
 
 #[derive(Debug, StructOpt)]
@@ -21,6 +21,15 @@ struct Opt {
     path: String,
     #[structopt(short, long, default_value = "eth0")]
     iface: String,
+}
+
+pub fn l3_protocol(protocol: u8) -> String {
+    match protocol {
+        bpfwall_common::ICMP_PROTOCOL => String::from("ICMP"),
+        bpfwall_common::UDP_PROTOCOL => String::from("UDP"),
+        bpfwall_common::TCP_PROTOCOL => String::from("TCP"),
+        _ => format!("{:#04x}", protocol),
+    }
 }
 
 #[tokio::main]
