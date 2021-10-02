@@ -23,7 +23,7 @@ struct Opt {
     iface: String,
 }
 
-pub fn l3_protocol(protocol: u8) -> String {
+fn l3_protocol(protocol: u8) -> String {
     match protocol {
         bpfwall_common::ICMP_PROTOCOL => String::from("ICMP"),
         bpfwall_common::UDP_PROTOCOL => String::from("UDP"),
