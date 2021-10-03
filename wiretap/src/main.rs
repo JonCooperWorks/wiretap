@@ -12,7 +12,7 @@ use std::{
 use structopt::StructOpt;
 use tokio::{signal, task};
 
-use bpfwall_common::IPv4PacketLog;
+use wiretap_common::IPv4PacketLog;
 
 
 #[derive(Debug, StructOpt)]
@@ -25,9 +25,9 @@ struct Opt {
 
 fn l3_protocol(protocol: u8) -> String {
     match protocol {
-        bpfwall_common::ICMP_PROTOCOL => String::from("ICMP"),
-        bpfwall_common::UDP_PROTOCOL => String::from("UDP"),
-        bpfwall_common::TCP_PROTOCOL => String::from("TCP"),
+        wiretap_common::ICMP_PROTOCOL => String::from("ICMP"),
+        wiretap_common::UDP_PROTOCOL => String::from("UDP"),
+        wiretap_common::TCP_PROTOCOL => String::from("TCP"),
         _ => format!("{:#04x}", protocol),
     }
 }
@@ -38,7 +38,7 @@ async fn main() -> Result<(), anyhow::Error> {
     let data = fs::read(&opt.path)?;
     
     let mut bpf = Bpf::load(&data)?;
-    let probe: &mut Xdp = bpf.program_mut("bpfwall")?.try_into()?;
+    let probe: &mut Xdp = bpf.program_mut("wiretap")?.try_into()?;
     probe.load()?;
     probe.attach(&opt.iface, XdpFlags::SKB_MODE)?;
 

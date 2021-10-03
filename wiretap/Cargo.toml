@@ -1,12 +1,12 @@
 [package]
-name = "bpfwall"
+name = "wiretap"
 version = "0.1.0"
 edition = "2018"
 publish = false
 
 [dependencies]
 aya = { git = "https://github.com/alessandrod/aya", branch="main", features=["async_tokio"] }
-bpfwall-common = { path = "../bpfwall-common", features=["userspace"] }
+wiretap-common = { path = "../wiretap-common", features=["userspace"] }
 anyhow = "1.0.42"
 bytes = "1"
 tokio = { version = "1.9.0", features = ["full"] }
@@ -15,5 +15,5 @@ futures = "0.3"
 structopt = { version = "0.3"}
 
 [[bin]]
-name = "bpfwall"
+name = "wiretap"
 path = "src/main.rs"

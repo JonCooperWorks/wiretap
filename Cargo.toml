@@ -1,2 +1,2 @@
 [workspace]
-members = ["bpfwall", "bpfwall-common", "xtask"]
+members = ["wiretap", "wiretap-common", "xtask"]

@@ -1,5 +1,5 @@
-# bpfwall
-`bpfwall` is a simple eBPF firewall that uses [`aya`](https://crates.io/crates/aya) to create the eBPF program and loader in Rust.
+# wiretap
+`wiretap` is a simple eBPF packet flow logger that uses [`aya`](https://crates.io/crates/aya) to create the eBPF program and loader in Rust.
 It is meant to help me learn eBPF and Rust and should not be used in a production environment.
 
 ## Prerequisites
@@ -39,8 +39,8 @@ cargo install --git https://github.com/cargo-generate/cargo-generate cargo-gener
 This package requires Rust `vmlinux.h` bindings.
 Use the `codegen` build task to do this.
 It will look in `/sys/kernel/btf/vmlinux` by default for the vmlinux file.
-The generated bindings will be written out to `bpfwall-ebpf/bindings.rs` by default.
-`bpfwall` needs the bindings for `iphdr`, `ethhdr`, `tcphdr` and `udphdr` to inspect Ethernet and IP packets before they go on the wire.
+The generated bindings will be written out to `wiretap-ebpf/bindings.rs` by default.
+`wiretap` needs the bindings for `iphdr`, `ethhdr`, `tcphdr` and `udphdr` to inspect Ethernet and IP packets before they go on the wire.
 
 ```bash
 cargo xtask codegen --names iphdr ethhdr tcphdr udphdr
@@ -49,7 +49,7 @@ cargo xtask codegen --names iphdr ethhdr tcphdr udphdr
 You can specify a eBPF directory and vmlinux path with the `--bpf-directory` and `--vmlinux-path`  flags.
 
 ```bash
-cargo xtask codegen --names iphdr ethhdr tcphdr udphdr --bpf-directory bpfwall-ebpf --vmlinux-path /sys/kernel/btf/vmlinux
+cargo xtask codegen --names iphdr ethhdr tcphdr udphdr --bpf-directory wiretap-ebpf --vmlinux-path /sys/kernel/btf/vmlinux
 ```
 
 ## Build eBPF
@@ -70,7 +70,7 @@ cargo build
 ## Run
 
 ```bash
-cargo run --bin bpfwall --  --iface eth0 --path target/bpfel-unknown-none/debug/bpfwall
+cargo run --bin wiretap --  --iface eth0 --path target/bpfel-unknown-none/debug/wiretap
 ```
 
 

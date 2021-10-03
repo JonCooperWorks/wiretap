@@ -10,7 +10,7 @@ use aya_bpf::{
 
 use core::mem;
 use memoffset::offset_of;
-use bpfwall_common::{IPv4PacketLog, UDP_PROTOCOL, TCP_PROTOCOL};
+use wiretap_common::{IPv4PacketLog, UDP_PROTOCOL, TCP_PROTOCOL};
 
 mod bindings;
 use bindings::{ethhdr, iphdr, tcphdr, udphdr};
@@ -23,7 +23,7 @@ fn panic(_info: &core::panic::PanicInfo) -> ! {
 #[map(name = "IPv4_PACKETS")]
 static mut IPv4_PACKETS: PerfMap<IPv4PacketLog> = PerfMap::<IPv4PacketLog>::with_max_entries(1024, 0);
 
-#[xdp(name="bpfwall")]
+#[xdp(name="wiretap")]
 pub fn xdp_firewall(ctx: XdpContext) -> u32 {
     match try_xdp_firewall(ctx) {
         Ok(ret) => ret,

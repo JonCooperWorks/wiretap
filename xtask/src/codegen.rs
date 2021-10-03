@@ -10,7 +10,7 @@ use structopt::StructOpt;
 pub struct Options {
     #[structopt(short, long)]
     names: Vec<String>,
-    #[structopt(short, long, default_value="bpfwall-ebpf/src")]
+    #[structopt(short, long, default_value="wiretap-ebpf/src")]
     bpf_directory: String,
     #[structopt(short, long, default_value="/sys/kernel/btf/vmlinux")]
     vmlinux_path: String

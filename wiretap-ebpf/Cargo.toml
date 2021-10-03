@@ -1,5 +1,5 @@
 [package]
-name = "bpfwall-ebpf"
+name = "wiretap-ebpf"
 version = "0.1.0"
 edition = "2018"
 
@@ -7,10 +7,10 @@ edition = "2018"
 aya-bpf = { git = "http://github.com/aya-rs/aya", branch = "main" }
 ufmt = "0.1"
 memoffset = "0.6"
-bpfwall-common = { path = "../bpfwall-common" }
+wiretap-common = { path = "../wiretap-common" }
 
 [[bin]]
-name = "bpfwall"
+name = "wiretap"
 path = "src/main.rs"
 
 [profile.dev]

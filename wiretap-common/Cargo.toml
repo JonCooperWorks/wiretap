@@ -1,5 +1,5 @@
 [package]
-name = "bpfwall-common"
+name = "wiretap-common"
 version = "0.1.0"
 edition = "2018"
 

@@ -39,7 +39,7 @@ pub struct Options {
 }
 
 pub fn build(opts: Options) -> Result<(), anyhow::Error> {
-    let dir = PathBuf::from("bpfwall-ebpf");
+    let dir = PathBuf::from("wiretap-ebpf");
     let target = format!("--target={}", opts.target);
     let mut args = vec![
         "+nightly",
