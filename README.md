@@ -8,19 +8,17 @@ Building `cargo-generate` consistently crashed `cargo` with an OOM on smaller ma
 
 ### Setup
 
-#### Docker
-`bpfwall` bundles a `[Dockerfile](./Dockerfile)` that spins up an Ubuntu 21.04 image with all the prerequisites that can be used to build this package.
-
-#### Manual
+#### Ubuntu 21.04
 First, install dependencies with the following commands:
 
 ```
 # First update package lists and packages.
-sudo apt update
-sudo apt upgrade
+sudo apt-get update
+sudo apt-get upgrade
 
 # Then install the packages needed to compile bpf modules
-sudo apt install -y build-essential llvm-12-dev libclang-12-dev zlib1g-dev libssl-dev pkg-config linux-cloud-tools-generic linux-tools-generic
+sudo apt-get install -y sudo build-essential llvm-12-dev libclang-12-dev zlib1g-dev libssl-dev pkg-config linux-cloud-tools-generic linux-tools-$(uname -r) linux-cloud-tools-$(uname -r) linux-tools-generic curl
+
 
 # Install Rust
 curl https://sh.rustup.rs -sSf | sh  -s -- -y
