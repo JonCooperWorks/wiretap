@@ -7,6 +7,11 @@ This was done on Ubuntu 21.04 on a DigitalOcean droplet with 2GB RAM.
 Building `cargo-generate` consistently crashed `cargo` with an OOM on smaller machines.
 
 ### Setup
+
+#### Docker
+`bpfwall` bundles a `[Dockerfile](./Dockerfile)` that spins up an Ubuntu 21.04 image with all the prerequisites that can be used to build this package.
+
+#### Manual
 First, install dependencies with the following commands:
 
 ```
@@ -18,7 +23,7 @@ sudo apt upgrade
 sudo apt install -y build-essential llvm-12-dev libclang-12-dev zlib1g-dev libssl-dev pkg-config linux-cloud-tools-generic linux-tools-generic
 
 # Install Rust
-curl https://sh.rustup.rs -sSf | sh
+curl https://sh.rustup.rs -sSf | sh  -s -- -y
 
 # Use rustup to install stable and nightly rust toolchains
 rustup install stable
