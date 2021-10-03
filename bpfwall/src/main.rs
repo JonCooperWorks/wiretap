@@ -61,9 +61,12 @@ async fn main() -> Result<(), anyhow::Error> {
                     let src_addr = net::Ipv4Addr::from(data.src);
                     let dst_addr = net::Ipv4Addr::from(data.dst);
                     let protocol = l3_protocol(data.l3_protocol);
-                    println!("LOG: {} {}:{} -> {}:{}, ACTION {}", protocol, src_addr, data.src_port, dst_addr, data.dst_port, data.action);
 
-                    // TODO: send to storage infrastructure async.
+                    // IPv4PacketLog field accesses wrapped in {} to prevent warnings from unaligned fields
+                    // See https://github.com/rust-lang/rust/issues/82523
+                    println!("LOG: {} {}:{} -> {}:{}, ACTION {}", protocol, src_addr, {data.src_port}, dst_addr, {data.dst_port}, {data.action});
+
+                    // TODO: send over storage channel.
                 }
             }
         });
