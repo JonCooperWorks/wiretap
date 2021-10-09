@@ -10,6 +10,13 @@ pub struct IPv4PacketLog {
     pub action: u32,
 }
 
+pub struct IPv4PacketLogWrapper
+ {
+    pub data: *const IPv4PacketLog,
+}
+unsafe impl Send for IPv4PacketLogWrapper
+ {}
+
 #[cfg(feature = "user")]
 unsafe impl aya::Pod for IPv4PacketLog {}
 
