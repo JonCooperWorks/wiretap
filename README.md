@@ -1,5 +1,6 @@
 # wiretap
 `wiretap` is a simple eBPF packet flow logger that uses [`aya`](https://crates.io/crates/aya) to create the eBPF program and loader in Rust.
+`wiretap` will take flow logs from an interface and store them to AWS S3 compatible cloud storage.
 It is meant to help me learn eBPF and Rust and should not be used in a production environment.
 
 ## Prerequisites
@@ -70,7 +71,7 @@ cargo build
 ## Run
 
 ```bash
-cargo run --bin wiretap --  --iface eth0 --path target/bpfel-unknown-none/debug/wiretap
+cargo run --bin wiretap -- --iface eth0 --path target/bpfel-unknown-none/debug/wiretap --storage-bucket bucket-name --storage-endpoint https://s3-storage-endpoint --storage-region s3-region
 ```
 
 

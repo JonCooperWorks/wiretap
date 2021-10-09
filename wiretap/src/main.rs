@@ -138,7 +138,7 @@ async fn main() -> Result<(), anyhow::Error> {
             // TODO: send chunks as CSV to cloud storage.
             for log in packet_logs {
                 let protocol = l3_protocol(log.l3_protocol);
-                println!("LOG: {} {}:{} -> {}:{}, ACTION {}", protocol, log.src, log.src_port, log.dst, log.dst_port, log.action);
+                println!("{}: {} {}:{} -> {}:{}, ACTION {}", log.timestamp, protocol, log.src, log.src_port, log.dst, log.dst_port, log.action);
             }
         }
         
