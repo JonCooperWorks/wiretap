@@ -61,7 +61,6 @@ async fn main() -> Result<(), anyhow::Error> {
         endpoint: opt.storage_endpoint,
     };
     let s3 = S3Client::new(region);
-    let storage_bucket = opt.storage_bucket.clone();
 
     // Set up wiretap BPF program
     let data = fs::read(&opt.path)?;
@@ -74,6 +73,7 @@ async fn main() -> Result<(), anyhow::Error> {
     let config = Config {
         max_packets_per_log: opt.max_packets_per_log,
         packet_log_interval: Duration::from_secs(opt.packet_log_interval * 60),
+        storage_bucket: opt.storage_bucket,
     };
 
     let (packet_tx, packet_rx) = mpsc::channel(config.max_packets_per_log);
@@ -154,7 +154,7 @@ async fn main() -> Result<(), anyhow::Error> {
             let timestamp = utils::timestamp();
             let filename = format!("{}.csv", timestamp);
             let req = PutObjectRequest {
-                bucket: storage_bucket.to_owned(),
+                bucket: config.storage_bucket.to_owned(),
                 key: filename.to_owned(),
                 body: Some(f.into()),
                 ..Default::default()
