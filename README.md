@@ -77,9 +77,20 @@ cargo build
 
 ## Run
 
+`wiretap` can be configured to send flow logs for a particular interface to [S3](https://aws.amazon.com/s3/) compatible storage.
+By default, it will log from `eth0`, but can be made to listen to any interface with the `--iface` flag.
+Pass the XDP `wiretap` program using the `--path` flag.
+
+### S3 Storage
+`wiretap` expects AWS credentials to be passed the environment variables:
+
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`
+
+Pass the bucket, endpoint and region for S3 compatible storage using the `--storage-bucket`, `--storage-endpoint` and `--storage-region` flags.
+
+
 ```bash
 AWS_ACCESS_KEY_ID=AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY
 =AWS_SECRET_KEY cargo run --bin wiretap -- --iface eth0 --path target/bpfel-unknown-none/debug/wiretap --storage-bucket bucket-name --storage-endpoint https://s3-storage-endpoint --storage-region s3-region
 ```
-
-
