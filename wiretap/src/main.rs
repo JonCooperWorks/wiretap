@@ -128,9 +128,6 @@ async fn main() -> Result<(), anyhow::Error> {
                         }
                     };
                     
-                    
-                    
-
                     tx.send(log).await.ok();
                 }
             }
