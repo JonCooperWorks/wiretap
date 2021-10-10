@@ -11,7 +11,7 @@ AWS_SECRET_ACCESS_KEY
 `wiretap` is meant to help me learn eBPF and Rust and should not be used in a production environment.
 
 ## Prerequisites
-This was done on Ubuntu 21.04 on a DigitalOcean droplet with 2GB RAM.
+This was done on Ubuntu 21.04 on a [DigitalOcean](https://m.do.co/c/515db03705b4) droplet with 2GB RAM.
 Building `cargo-generate` consistently crashed `cargo` with an OOM on smaller machines.
 
 ### Setup
