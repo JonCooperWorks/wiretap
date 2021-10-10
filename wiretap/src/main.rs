@@ -97,7 +97,7 @@ async fn main() -> Result<(), anyhow::Error> {
 
                     // PacketLog field accesses wrapped in {} to prevent warnings from unaligned fields
                     // See https://github.com/rust-lang/rust/issues/82523
-                    let log: storage::FlowLog = if data.is_ipv4 {
+                    let log = if data.is_ipv4 {
                         let src = u32::try_from(data.src).ok().unwrap();
                         let dst = u32::try_from(data.dst).ok().unwrap();
                         let src_addr = net::Ipv4Addr::from(src);
