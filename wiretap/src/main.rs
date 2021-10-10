@@ -139,6 +139,8 @@ async fn main() -> Result<(), anyhow::Error> {
                 body: Some(f.into()),
                 ..Default::default()
             };
+
+            // TODO: handle errors from S3
             let _res = s3.put_object(req).await.unwrap();
 
             for log in packet_logs {
