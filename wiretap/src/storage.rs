@@ -1,3 +1,4 @@
+use serde::Serialize;
 use std::net::IpAddr;
 use std::time::Duration;
 
@@ -6,7 +7,8 @@ pub struct Config {
     pub packet_log_interval: Duration,
 }
 
-pub struct IPv4FlowLog {
+#[derive(Serialize)]
+pub struct FlowLog {
     pub src: IpAddr,
     pub dst: IpAddr,
     pub src_port: u16,
@@ -16,4 +18,4 @@ pub struct IPv4FlowLog {
     pub timestamp: u64,
 }
 
-unsafe impl Send for IPv4FlowLog {}
+unsafe impl Send for FlowLog {}

@@ -10,18 +10,22 @@ use structopt::StructOpt;
 pub struct Options {
     #[structopt(short, long)]
     names: Vec<String>,
-    #[structopt(short, long, default_value="wiretap-ebpf/src")]
+    #[structopt(short, long, default_value = "wiretap-ebpf/src")]
     bpf_directory: String,
-    #[structopt(short, long, default_value="/sys/kernel/btf/vmlinux")]
-    vmlinux_path: String
+    #[structopt(short, long, default_value = "/sys/kernel/btf/vmlinux")]
+    vmlinux_path: String,
 }
-
 
 pub fn generate(opts: Options) -> Result<(), anyhow::Error> {
     let dir = PathBuf::from(&opts.bpf_directory);
     let vmlinux_path = Path::new(&opts.vmlinux_path);
     let bindings = btf_types::generate(vmlinux_path, &opts.names, true)?;
-    println!("Generating bindings to {} for {:#?} to {}/bindings.rs", opts.vmlinux_path, opts.names.join(", "), opts.bpf_directory);
+    println!(
+        "Generating bindings to {} for {:#?} to {}/bindings.rs",
+        opts.vmlinux_path,
+        opts.names.join(", "),
+        opts.bpf_directory
+    );
     // Write the bindings to the $OUT_DIR/bindings.rs file.
     let mut out = File::create(dir.join("bindings.rs"))?;
     write!(out, "{}", bindings)?;
