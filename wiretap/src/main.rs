@@ -97,7 +97,6 @@ async fn main() -> Result<(), anyhow::Error> {
                     let data = unsafe { packet_log.data.read_unaligned() };
                     let timestamp = utils::timestamp();
 
-
                     // PacketLog field accesses wrapped in {} to prevent warnings from unaligned fields
                     // See https://github.com/rust-lang/rust/issues/82523
                     let log: FlowLog = if data.is_ipv4 {
@@ -127,7 +126,7 @@ async fn main() -> Result<(), anyhow::Error> {
                             timestamp: timestamp,
                         }
                     };
-                    
+
                     tx.send(log).await.ok();
                 }
             }
