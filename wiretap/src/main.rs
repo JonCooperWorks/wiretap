@@ -132,7 +132,6 @@ async fn main() -> Result<(), anyhow::Error> {
             }
             let f = serializer.into_inner().await.unwrap();
 
-            // TODO: send chunks as CSV to cloud storage.
             let timestamp = utils::timestamp();
             let filename = format!("{}.csv", timestamp);
             let req = PutObjectRequest{
