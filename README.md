@@ -89,8 +89,12 @@ Pass the XDP `wiretap` program using the `--path` flag.
 
 Pass the bucket, endpoint and region for S3 compatible storage using the `--storage-bucket`, `--storage-endpoint` and `--storage-region` flags.
 
+### Log Intervals
+`wiretap` can be made to log packets to S3 compatible at intervals.
+By default, it will log every million (1000000) packets or 5 minutes, whichever comes first.
+You can change these with the `--max-packets-per-log` and `--packet-log-interval` flags.
 
 ```bash
 AWS_ACCESS_KEY_ID=AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY
-=AWS_SECRET_KEY cargo run --bin wiretap -- --iface eth0 --path target/bpfel-unknown-none/debug/wiretap --storage-bucket bucket-name --storage-endpoint https://s3-storage-endpoint --storage-region s3-region
+=AWS_SECRET_KEY cargo run --bin wiretap -- --iface eth0 --path target/bpfel-unknown-none/debug/wiretap --storage-bucket bucket-name --storage-endpoint https://s3-storage-endpoint --storage-region s3-region --max-packets-per-log 1000000 --packet-log-interval 5
 ```
