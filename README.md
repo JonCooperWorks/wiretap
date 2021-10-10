@@ -48,16 +48,16 @@ This package requires Rust `vmlinux.h` bindings.
 Use the `codegen` build task to do this.
 It will look in `/sys/kernel/btf/vmlinux` by default for the vmlinux file.
 The generated bindings will be written out to `wiretap-ebpf/bindings.rs` by default.
-`wiretap` needs the bindings for `iphdr`, `ethhdr`, `tcphdr` and `udphdr` to inspect Ethernet and IP packets before they go on the wire.
+`wiretap` needs the bindings for `iphdr`, `ipv6hdr`, `ethhdr`, `tcphdr` and `udphdr` to inspect Ethernet and IP packets before they go on the wire.
 
 ```bash
-cargo xtask codegen --names iphdr ethhdr tcphdr udphdr
+cargo xtask codegen
 ```
 
 You can specify a eBPF directory and vmlinux path with the `--bpf-directory` and `--vmlinux-path`  flags.
 
 ```bash
-cargo xtask codegen --names iphdr ethhdr tcphdr udphdr --bpf-directory wiretap-ebpf --vmlinux-path /sys/kernel/btf/vmlinux
+cargo xtask codegen --bpf-directory wiretap-ebpf --vmlinux-path /sys/kernel/btf/vmlinux
 ```
 
 ## Build eBPF
@@ -90,7 +90,7 @@ Pass the XDP `wiretap` program using the `--path` flag.
 Pass the bucket, endpoint and region for S3 compatible storage using the `--storage-bucket`, `--storage-endpoint` and `--storage-region` flags.
 
 ### Log Intervals
-`wiretap` can be made to log packets to S3 compatible at intervals.
+`wiretap` can be made to log packets to S3 compatible storage at intervals.
 By default, it will log every million (1000000) packets or 5 minutes, whichever comes first.
 You can change these with the `--max-packets-per-log` and `--packet-log-interval` flags.
 
