@@ -1,22 +1,23 @@
 #![no_std]
 
 #[repr(packed)]
-pub struct IPv4PacketLog {
-    pub src: u32,
-    pub dst: u32,
+pub struct PacketLog {
+    pub src: u128,
+    pub dst: u128,
     pub src_port: u16,
     pub dst_port: u16,
     pub l3_protocol: u8,
     pub action: u32,
+    pub is_ipv4: bool,
 }
 
-pub struct IPv4PacketLogWrapper {
-    pub data: *const IPv4PacketLog,
+pub struct PacketLogWrapper {
+    pub data: *const PacketLog,
 }
-unsafe impl Send for IPv4PacketLogWrapper {}
+unsafe impl Send for PacketLogWrapper {}
 
 #[cfg(feature = "user")]
-unsafe impl aya::Pod for IPv4PacketLog {}
+unsafe impl aya::Pod for PacketLog {}
 
 pub const ICMP_PROTOCOL: u8 = 0x01;
 pub const UDP_PROTOCOL: u8 = 0x11;

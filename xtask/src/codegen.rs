@@ -8,8 +8,6 @@ use structopt::StructOpt;
 
 #[derive(StructOpt)]
 pub struct Options {
-    #[structopt(short, long)]
-    names: Vec<String>,
     #[structopt(short, long, default_value = "wiretap-ebpf/src")]
     bpf_directory: String,
     #[structopt(short, long, default_value = "/sys/kernel/btf/vmlinux")]
@@ -19,11 +17,12 @@ pub struct Options {
 pub fn generate(opts: Options) -> Result<(), anyhow::Error> {
     let dir = PathBuf::from(&opts.bpf_directory);
     let vmlinux_path = Path::new(&opts.vmlinux_path);
-    let bindings = btf_types::generate(vmlinux_path, &opts.names, true)?;
+    let names = vec!["udphdr", "tcphdr", "iphdr", "ipv6hdr", "ethhdr"];
+    let bindings = btf_types::generate(vmlinux_path, &names, true)?;
     println!(
         "Generating bindings to {} for {:#?} to {}/bindings.rs",
         opts.vmlinux_path,
-        opts.names.join(", "),
+        names.join(", "),
         opts.bpf_directory
     );
     // Write the bindings to the $OUT_DIR/bindings.rs file.

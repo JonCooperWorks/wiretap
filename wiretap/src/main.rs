@@ -20,7 +20,7 @@ use tokio::{signal, sync::mpsc, task};
 use tokio_stream::wrappers::ReceiverStream;
 use tokio_stream::StreamExt;
 
-use wiretap_common::{IPv4PacketLog, IPv4PacketLogWrapper};
+use wiretap_common::{PacketLog, PacketLogWrapper};
 
 mod storage;
 use storage::{Config, FlowLog};
@@ -69,7 +69,7 @@ async fn main() -> Result<(), anyhow::Error> {
     let probe: &mut Xdp = bpf.program_mut("wiretap")?.try_into()?;
     probe.load()?;
     probe.attach(&opt.iface, XdpFlags::SKB_MODE)?;
-    let mut perf_array = AsyncPerfEventArray::try_from(bpf.map_mut("IPv4_PACKETS")?)?;
+    let mut packets = AsyncPerfEventArray::try_from(bpf.map_mut("PACKETS")?)?;
 
     let config = Config {
         max_packets_per_log: opt.max_packets_per_log,
@@ -79,7 +79,7 @@ async fn main() -> Result<(), anyhow::Error> {
     let (packet_tx, packet_rx) = mpsc::channel(config.max_packets_per_log);
 
     for cpu_id in online_cpus()? {
-        let mut buf = perf_array.open(cpu_id, None)?;
+        let mut buf = packets.open(cpu_id, None)?;
         let tx = packet_tx.clone();
 
         task::spawn(async move {
@@ -91,25 +91,45 @@ async fn main() -> Result<(), anyhow::Error> {
                 let events = buf.read_events(&mut buffers).await.unwrap();
                 for i in 0..events.read {
                     let buf = &mut buffers[i];
-                    let packet_log = IPv4PacketLogWrapper {
-                        data: buf.as_ptr() as *const IPv4PacketLog,
+                    let packet_log = PacketLogWrapper {
+                        data: buf.as_ptr() as *const PacketLog,
                     };
                     let data = unsafe { packet_log.data.read_unaligned() };
-                    let src_addr = net::Ipv4Addr::from(data.src);
-                    let dst_addr = net::Ipv4Addr::from(data.dst);
                     let timestamp = utils::timestamp();
 
-                    // IPv4PacketLog field accesses wrapped in {} to prevent warnings from unaligned fields
+
+                    // PacketLog field accesses wrapped in {} to prevent warnings from unaligned fields
                     // See https://github.com/rust-lang/rust/issues/82523
-                    let log = FlowLog {
-                        src: IpAddr::V4(src_addr),
-                        dst: IpAddr::V4(dst_addr),
-                        src_port: { data.src_port },
-                        dst_port: { data.dst_port },
-                        l3_protocol: { data.l3_protocol },
-                        action: { data.action },
-                        timestamp: timestamp,
+                    let log: FlowLog = if data.is_ipv4 {
+                        let src = u32::try_from(data.src).ok().unwrap();
+                        let dst = u32::try_from(data.dst).ok().unwrap();
+                        let src_addr = net::Ipv4Addr::from(src);
+                        let dst_addr = net::Ipv4Addr::from(dst);
+                        FlowLog {
+                            src: IpAddr::V4(src_addr),
+                            dst: IpAddr::V4(dst_addr),
+                            src_port: { data.src_port },
+                            dst_port: { data.dst_port },
+                            l3_protocol: { data.l3_protocol },
+                            action: { data.action },
+                            timestamp: timestamp,
+                        }
+                    } else {
+                        let src_addr = net::Ipv6Addr::from(data.src);
+                        let dst_addr = net::Ipv6Addr::from(data.dst);
+                        FlowLog {
+                            src: IpAddr::V6(src_addr),
+                            dst: IpAddr::V6(dst_addr),
+                            src_port: { data.src_port },
+                            dst_port: { data.dst_port },
+                            l3_protocol: { data.l3_protocol },
+                            action: { data.action },
+                            timestamp: timestamp,
+                        }
                     };
+                    
+                    
+                    
 
                     tx.send(log).await.ok();
                 }
