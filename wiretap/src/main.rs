@@ -8,7 +8,7 @@ use bytes::BytesMut;
 use csv_async::AsyncSerializer;
 use futures_batch::ChunksTimeoutStreamExt;
 use rusoto_core::Region;
-use rusoto_s3::{PutObjectRequest, S3, S3Client, StreamingBody};
+use rusoto_s3::{PutObjectRequest, S3Client, S3};
 use std::net::IpAddr;
 use std::time::Duration;
 use std::{
@@ -16,7 +16,6 @@ use std::{
     fs, net,
 };
 use structopt::StructOpt;
-use tokio::io::{self, AsyncReadExt};
 use tokio::{signal, sync::mpsc, task};
 use tokio_stream::wrappers::ReceiverStream;
 use tokio_stream::StreamExt;
@@ -112,7 +111,7 @@ async fn main() -> Result<(), anyhow::Error> {
                         timestamp: timestamp,
                     };
 
-                    tx.send(log).await;
+                    tx.send(log).await.ok();
                 }
             }
         });
@@ -128,13 +127,13 @@ async fn main() -> Result<(), anyhow::Error> {
             let mut serializer = AsyncSerializer::from_writer(vec![]);
 
             for log in &packet_logs {
-                serializer.serialize(&log).await;
+                serializer.serialize(&log).await.unwrap();
             }
             let f = serializer.into_inner().await.unwrap();
 
             let timestamp = utils::timestamp();
             let filename = format!("{}.csv", timestamp);
-            let req = PutObjectRequest{
+            let req = PutObjectRequest {
                 bucket: storage_bucket.to_owned(),
                 key: filename.to_owned(),
                 body: Some(f.into()),
