@@ -23,8 +23,6 @@ use tokio_stream::StreamExt;
 use wiretap_common::{PacketLog, PacketLogWrapper};
 
 mod storage;
-use storage::{Config, FlowLog};
-
 mod utils;
 
 #[derive(Debug, StructOpt)]
@@ -70,7 +68,7 @@ async fn main() -> Result<(), anyhow::Error> {
     probe.attach(&opt.iface, XdpFlags::SKB_MODE)?;
     let mut packets = AsyncPerfEventArray::try_from(bpf.map_mut("PACKETS")?)?;
 
-    let config = Config {
+    let config = storage::Config {
         max_packets_per_log: opt.max_packets_per_log,
         packet_log_interval: Duration::from_secs(opt.packet_log_interval * 60),
         storage_bucket: opt.storage_bucket,
@@ -99,12 +97,12 @@ async fn main() -> Result<(), anyhow::Error> {
 
                     // PacketLog field accesses wrapped in {} to prevent warnings from unaligned fields
                     // See https://github.com/rust-lang/rust/issues/82523
-                    let log: FlowLog = if data.is_ipv4 {
+                    let log: storage::FlowLog = if data.is_ipv4 {
                         let src = u32::try_from(data.src).ok().unwrap();
                         let dst = u32::try_from(data.dst).ok().unwrap();
                         let src_addr = net::Ipv4Addr::from(src);
                         let dst_addr = net::Ipv4Addr::from(dst);
-                        FlowLog {
+                        storage::FlowLog {
                             src: IpAddr::V4(src_addr),
                             dst: IpAddr::V4(dst_addr),
                             src_port: { data.src_port },
@@ -116,7 +114,7 @@ async fn main() -> Result<(), anyhow::Error> {
                     } else {
                         let src_addr = net::Ipv6Addr::from(data.src);
                         let dst_addr = net::Ipv6Addr::from(data.dst);
-                        FlowLog {
+                        storage::FlowLog {
                             src: IpAddr::V6(src_addr),
                             dst: IpAddr::V6(dst_addr),
                             src_port: { data.src_port },
