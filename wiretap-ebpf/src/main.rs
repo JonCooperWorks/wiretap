@@ -4,7 +4,7 @@
 use aya_bpf::{
     bindings::xdp_action,
     macros::{map, xdp},
-    maps::PerfMap,
+    maps::{HashMap, PerfMap},
     programs::XdpContext,
 };
 
@@ -23,10 +23,13 @@ fn panic(_info: &core::panic::PanicInfo) -> ! {
 #[map(name = "PACKETS")]
 static mut PACKETS: PerfMap<PacketLog> = PerfMap::<PacketLog>::with_max_entries(1024, 0);
 
+#[map(name = "OUTBOUND_BLOCKLIST")]
+static mut OUTBOUND_BLOCKLIST: HashMap<u32, u8> = HashMap::<u32, u8>::with_max_entries(1024, 0);
+
 #[xdp(name="wiretap")]
 pub fn xdp_firewall(ctx: XdpContext) -> u32 {
     match try_xdp_firewall(ctx) {
-        Ok(ret) => ret,
+        Ok(ret) => xdp_action::XDP_PASS,
         Err(_) => xdp_action::XDP_ABORTED,
     }
 }
@@ -43,7 +46,6 @@ unsafe fn ptr_at<T>(ctx: &XdpContext, offset: usize) -> Result<*const T, ()> {
 
     Ok((start + offset) as *const T)
 }
-
 
 fn try_xdp_firewall(ctx: XdpContext) -> Result<u32, ()> {
     let h_proto = u16::from_be(unsafe { *ptr_at(&ctx, offset_of!(ethhdr, h_proto))? });
@@ -71,7 +73,6 @@ fn try_xdp_firewall(ctx: XdpContext) -> Result<u32, ()> {
                     (0x0000, 0x0000)
                 }
             };
-
             let log_entry = PacketLog {
                 src: source,
                 dst: dest,
@@ -85,6 +86,7 @@ fn try_xdp_firewall(ctx: XdpContext) -> Result<u32, ()> {
             unsafe {
                 PACKETS.output(&ctx, &log_entry, 0);
             }
+
             Ok(xdp_action::XDP_PASS)
         }
 
@@ -111,20 +113,30 @@ fn try_xdp_firewall(ctx: XdpContext) -> Result<u32, ()> {
                 }
             };
         
+            let action = match unsafe { OUTBOUND_BLOCKLIST.get(&dest) } {
+                Some(_) => xdp_action::XDP_ABORTED,
+                None => xdp_action::XDP_PASS
+            };
+
             let log_entry = PacketLog {
                 src: source as u128,
                 dst: dest as u128,
                 src_port: src_port,
                 dst_port: dst_port,
                 l3_protocol: l3_protocol,
-                action: xdp_action::XDP_PASS,
+                action: action,
                 is_ipv4: true,
             };
         
             unsafe {
                 PACKETS.output(&ctx, &log_entry, 0);
             }
-            Ok(xdp_action::XDP_PASS)
+
+            if action == xdp_action::XDP_PASS {
+                Ok(xdp_action::XDP_PASS)
+            } else {
+                Err(())
+            }
         }
         _ => Ok(xdp_action::XDP_PASS)
     }

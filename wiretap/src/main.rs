@@ -1,5 +1,8 @@
 use aya::{
-    maps::perf::AsyncPerfEventArray,
+    maps::{
+        HashMap,
+        perf::AsyncPerfEventArray,
+    },
     programs::{Xdp, XdpFlags},
     util::online_cpus,
     Bpf,
@@ -9,7 +12,7 @@ use csv_async::AsyncSerializer;
 use futures_batch::ChunksTimeoutStreamExt;
 use rusoto_core::Region;
 use rusoto_s3::{PutObjectRequest, S3Client, S3};
-use std::net::IpAddr;
+use std::net::{IpAddr, Ipv4Addr};
 use std::time::Duration;
 use std::{
     convert::{TryFrom, TryInto},
@@ -47,6 +50,9 @@ struct Opt {
 
     #[structopt(long, default_value = "5")]
     packet_log_interval: u64,
+
+    #[structopt(long, default_value="169.254.169.254")]
+    banned_ips: Vec<String>,
 }
 
 #[tokio::main]
@@ -66,6 +72,15 @@ async fn main() -> Result<(), anyhow::Error> {
     let probe: &mut Xdp = bpf.program_mut("wiretap")?.try_into()?;
     probe.load()?;
     probe.attach(&opt.iface, XdpFlags::SKB_MODE)?;
+
+    // Send blocklist to BPF program.
+    let mut outbound_blocklist = HashMap::try_from(bpf.map_mut("OUTBOUND_BLOCKLIST")?)?;
+    for ip in opt.banned_ips {
+        let ipaddr: Ipv4Addr = ip.parse().ok().unwrap();
+        let number = u32::from(ipaddr);
+        outbound_blocklist.insert(number, 1u8, 0)?;
+    }
+    
     let mut packets = AsyncPerfEventArray::try_from(bpf.map_mut("PACKETS")?)?;
 
     let config = storage::Config {

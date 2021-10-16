@@ -11,13 +11,13 @@ pub struct PacketLog {
     pub is_ipv4: bool,
 }
 
+#[cfg(feature = "user")]
+unsafe impl aya::Pod for PacketLog {}
+
 pub struct PacketLogWrapper {
     pub data: *const PacketLog,
 }
 unsafe impl Send for PacketLogWrapper {}
-
-#[cfg(feature = "user")]
-unsafe impl aya::Pod for PacketLog {}
 
 pub const ICMP_PROTOCOL: u8 = 0x01;
 pub const UDP_PROTOCOL: u8 = 0x11;
